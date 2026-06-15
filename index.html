@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>期末考试安排</title>
+<style>
+  :root {
+    --bg: #f5f5fa;
+    --card-bg: #ffffff;
+    --text: #1c1c1e;
+    --text-sec: #3c3c43;
+    --text-dim: #8e8e93;
+    --accent: #5b5ef0;
+    --t1: #6366f1;
+    --t2: #8b5cf6;
+    --t3: #ec4899;
+    --t4: #f59e0b;
+    --t5: #10b981;
+    --t6: #3b82f6;
+    --border: #e5e5ea;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --card-bg: #1c1c1e;
+      --text: #f5f5f7;
+      --text-sec: #d1d1d6;
+      --text-dim: #636366;
+      --border: #2c2c2e;
+      --shadow: 0 2px 16px rgba(0,0,0,0.3);
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app {
+    max-width: 428px;
+    margin: 0 auto;
+    padding: 0 16px 48px;
+  }
+
+  /* Header */
+  .header {
+    padding: 60px 0 4px;
+    text-align: center;
+  }
+
+  @supports (padding-top: env(safe-area-inset-top)) {
+    .header { padding-top: calc(60px + env(safe-area-inset-top)); }
+    .app { padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
+  }
+
+  .header-icon {
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+
+  .header-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .header-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* Summary strip */
+  .summary {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0 24px;
+    padding: 0 2px;
+  }
+
+  .summary-item {
+    flex: 1;
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 14px 10px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border: 0.5px solid var(--border);
+  }
+
+  .summary-num {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .summary-num.red { color: #ef4444; }
+  .summary-num.orange { color: #f59e0b; }
+  .summary-num.blue { color: #6366f1; }
+
+  .summary-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* Day section */
+  .day-section {
+    margin-bottom: 20px;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+
+  .day-date {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .day-weekday {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .day-tag {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    line-height: 1.4;
+  }
+
+  .day-tag.today {
+    background: #ef4444;
+    color: #fff;
+  }
+
+  .day-tag.tomorrow {
+    background: #f59e0b;
+    color: #fff;
+  }
+
+  .day-tag.soon {
+    background: rgba(99,102,241,0.12);
+    color: #6366f1;
+  }
+
+  .day-tag.later {
+    background: rgba(142,142,147,0.12);
+    color: var(--text-dim);
+  }
+
+  /* Exam Card */
+  .exam-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    border: 0.5px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s;
+  }
+
+  .exam-card:active { transform: scale(0.98); }
+
+  .exam-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+
+  .exam-name {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.35;
+    flex: 1;
+    margin-right: 12px;
+  }
+
+  .exam-period {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-top: 2px;
+  }
+
+  .exam-period.am {
+    background: rgba(245,158,11,0.12);
+    color: #d97706;
+  }
+
+  .exam-period.pm {
+    background: rgba(139,92,246,0.12);
+    color: #7c3aed;
+  }
+
+  .exam-code {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+  }
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .info-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .info-item:nth-child(1) .info-icon { background: rgba(99,102,241,0.1); }
+  .info-item:nth-child(2) .info-icon { background: rgba(16,185,129,0.1); }
+  .info-item:nth-child(3) .info-icon { background: rgba(236,72,153,0.1); }
+  .info-item:nth-child(4) .info-icon { background: rgba(59,130,246,0.1); }
+
+  .info-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    display: block;
+    line-height: 1.3;
+  }
+
+  .info-value {
+    font-size: 14px;
+    font-weight: 600;
+    display: block;
+    line-height: 1.3;
+  }
+
+  /* Live countdown bar */
+  .countdown-bar {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .countdown-bar .cd-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: pulse 1.5s infinite;
+  }
+
+  .countdown-bar .cd-dot.done {
+    background: #10b981;
+    animation: none;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .countdown-bar.ongoing { color: #ef4444; }
+  .countdown-bar.upcoming { color: var(--text-dim); }
+  .countdown-bar.finished { color: #10b981; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 24px 0 0;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .footer span {
+    font-size: 16px;
+    vertical-align: middle;
+  }
+
+  /* Animation */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .day-section {
+    animation: slideUp 0.4s ease-out both;
+  }
+
+  .day-section:nth-child(1) { animation-delay: 0.05s; }
+  .day-section:nth-child(2) { animation-delay: 0.15s; }
+  .day-section:nth-child(3) { animation-delay: 0.25s; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-icon">📚</div>
+    <div class="header-title">期末考试安排</div>
+    <div class="header-sub">2025–2026 第二学期 · 第16周</div>
+  </div>
+
+  <div class="summary" id="summary"></div>
+  <div id="timeline"></div>
+
+  <div class="footer"><span>✨</span> 加油，逢考必过 <span>✨</span></div>
+
+</div>
+
+<script>
+const exams = [
+  {
+    date: '2026-06-16',
+    dateStr: '6月16日',
+    weekday: '周二',
+    name: '线性代数B',
+    code: '—',
+    time: '10:20–12:20',
+    startH: 10, startM: 20,
+    endH: 12, endM: 20,
+    room: '—',
+    seat: '—',
+    teacher: '—'
+  },
+  {
+    date: '2026-06-16',
+    dateStr: '6月16日',
+    weekday: '周二',
+    name: '中国近现代史纲要',
+    code: '—',
+    time: '13:30–15:30',
+    startH: 13, startM: 30,
+    endH: 15, endM: 30,
+    room: '—',
+    seat: '—',
+    teacher: '—'
+  },
+  {
+    date: '2026-06-17',
+    dateStr: '6月17日',
+    weekday: '周三',
+    name: '进阶英语A',
+    code: '—',
+    time: '10:20–12:20',
+    startH: 10, startM: 20,
+    endH: 12, endM: 20,
+    room: '—',
+    seat: '—',
+    teacher: '—'
+  },
+  {
+    date: '2026-06-17',
+    dateStr: '6月17日',
+    weekday: '周三',
+    name: '毛泽东思想和中国特色社会主义理论体系概论',
+    code: '—',
+    time: '13:30–15:30',
+    startH: 13, startM: 30,
+    endH: 15, endM: 30,
+    room: '—',
+    seat: '—',
+    teacher: '—'
+  },
+  {
+    date: '2026-06-18',
+    dateStr: '6月18日',
+    weekday: '周四',
+    name: '高等数学(下)',
+    code: '—',
+    time: '08:00–10:00',
+    startH: 8, startM: 0,
+    endH: 10, endM: 0,
+    room: '—',
+    seat: '—',
+    teacher: '—'
+  },
+  {
+    date: '2026-06-18',
+    dateStr: '6月18日',
+    weekday: '周四',
+    name: '大学物理C',
+    code: '—',
+    time: '10:20–12:20',
+    startH: 10, startM: 20,
+    endH: 12, endM: 20,
+    room: '—',
+    seat: '—',
+    teacher: '—'
+  }
+];
+
+// Group by date
+const groups = {};
+exams.forEach(e => {
+  if (!groups[e.date]) groups[e.date] = [];
+  groups[e.date].push(e);
+});
+const sortedDates = Object.keys(groups).sort();
+
+function getNow() {
+  return new Date();
+}
+
+function getDiffDays(dateStr) {
+  const now = getNow();
+  const d = new Date(dateStr + 'T00:00:00');
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.floor((d - todayStart) / (1000*60*60*24));
+}
+
+function getCountdownText(exam) {
+  const now = getNow();
+  const start = new Date(exam.date + 'T' + String(exam.startH).padStart(2,'0') + ':' + String(exam.startM).padStart(2,'0') + ':00');
+  const end = new Date(exam.date + 'T' + String(exam.endH).padStart(2,'0') + ':' + String(exam.endM).padStart(2,'0') + ':00');
+
+  if (now > end) return { text: '已结束', cls: 'finished', dotCls: 'done' };
+  if (now >= start && now <= end) return { text: '考试进行中', cls: 'ongoing', dotCls: '' };
+
+  const diff = start - now;
+  const days = Math.floor(diff / (1000*60*60*24));
+  const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+  const mins = Math.floor((diff % (1000*60*60)) / (1000*60));
+
+  if (days > 0) {
+    return { text: days + '天' + hours + '小时后开考', cls: 'upcoming', dotCls: '' };
+  }
+  if (hours > 0) {
+    return { text: hours + '小时' + mins + '分钟后开考', cls: 'ongoing', dotCls: '' };
+  }
+  return { text: mins + '分钟后开考', cls: 'ongoing', dotCls: '' };
+}
+
+function render() {
+  const now = getNow();
+
+  // Summary
+  let totalExams = exams.length;
+  let firstDiff = 999;
+  sortedDates.forEach(d => {
+    const diff = getDiffDays(d);
+    if (diff >= 0 && diff < firstDiff) firstDiff = diff;
+  });
+  let finishedCount = 0;
+  exams.forEach(e => {
+    const end = new Date(e.date + 'T' + String(e.endH).padStart(2,'0') + ':' + String(e.endM).padStart(2,'0') + ':00');
+    if (now > end) finishedCount++;
+  });
+  const remainCount = totalExams - finishedCount;
+
+  const summaryEl = document.getElementById('summary');
+  summaryEl.innerHTML = `
+    <div class="summary-item">
+      <div class="summary-num blue">${totalExams}</div>
+      <div class="summary-label">科目总数</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-num ${firstDiff <= 1 ? 'red' : firstDiff <= 2 ? 'orange' : 'blue'}">${firstDiff <= 0 ? '今天' : firstDiff === 1 ? '明天' : firstDiff + '天'}</div>
+      <div class="summary-label">最近考试</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-num ${remainCount === 0 ? 'blue' : 'red'}">${remainCount}</div>
+      <div class="summary-label">待考科目</div>
+    </div>`;
+
+  // Timeline
+  const timelineEl = document.getElementById('timeline');
+  let html = '';
+
+  sortedDates.forEach(dateStr => {
+    const g = groups[dateStr];
+    const first = g[0];
+    const diff = getDiffDays(dateStr);
+
+    let tagCls, tagText;
+    if (diff < 0) { tagCls = 'later'; tagText = '已过'; }
+    else if (diff === 0) { tagCls = 'today'; tagText = '今天'; }
+    else if (diff === 1) { tagCls = 'tomorrow'; tagText = '明天'; }
+    else if (diff <= 3) { tagCls = 'soon'; tagText = diff + '天后'; }
+    else { tagCls = 'later'; tagText = diff + '天后'; }
+
+    html += `<div class="day-section">
+      <div class="day-header">
+        <div class="day-date">${first.dateStr}</div>
+        <div class="day-weekday">${first.weekday}</div>
+        <div class="day-tag ${tagCls}">${tagText}</div>
+      </div>`;
+
+    g.forEach(exam => {
+      const isAM = exam.startH < 12;
+      const cd = getCountdownText(exam);
+      const end = new Date(exam.date + 'T' + String(exam.endH).padStart(2,'0') + ':' + String(exam.endM).padStart(2,'0') + ':00');
+      const isFinished = now > end;
+
+      html += `
+      <div class="exam-card" ${isFinished ? 'style="opacity:0.55"' : ''}>
+        <div class="exam-top">
+          <div class="exam-name">${exam.name}</div>
+          <div class="exam-period ${isAM ? 'am' : 'pm'}">${isAM ? '上午' : '下午'}</div>
+        </div>
+        <div class="exam-code">${exam.code} · 期末考试</div>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-icon">🕐</div>
+            <div>
+              <span class="info-label">时间</span>
+              <span class="info-value">${exam.time}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">📍</div>
+            <div>
+              <span class="info-label">教室</span>
+              <span class="info-value">${exam.room}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">💺</div>
+            <div>
+              <span class="info-label">座位号</span>
+              <span class="info-value">${exam.seat}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">🧑‍🏫</div>
+            <div>
+              <span class="info-label">授课老师</span>
+              <span class="info-value">${exam.teacher}</span>
+            </div>
+          </div>
+        </div>
+        <div class="countdown-bar ${cd.cls}">
+          <div class="cd-dot ${cd.dotCls}"></div>
+          ${cd.text}
+        </div>
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  timelineEl.innerHTML = html;
+}
+
+// Initial render
+render();
+
+// Auto-update every 60 seconds
+setInterval(render, 60000);
+</script>
+</body>
+</html>
